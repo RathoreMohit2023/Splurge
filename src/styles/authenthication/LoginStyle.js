@@ -165,6 +165,48 @@ const getLoginStyle = colors =>
       shadowOpacity: 0.2,
       shadowOffset: { width: 0, height: 4 },
     },
+
+    appleBtn: {
+      // flexDirection: 'row',
+      // alignItems: 'center',
+      // justifyContent: 'center',
+      // backgroundColor: '#000',
+      // paddingVertical: 14,
+      // borderRadius: 8,
+      // marginTop: 12,
+      backgroundColor: colors.theme, 
+      height: 56,
+      borderRadius: 12,
+      flexDirection: 'row', // Aligns Icon and Text horizontally
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 30,
+      borderWidth: 1,
+      borderColor: colors.border,
+      // Add Shadow/Elevation for better UI
+      elevation: 2,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 3,
+    },
+    
+    appleIcon: {
+      width: 24,
+      height: 24,
+      marginRight: 12,
+    },
+    appleIconWrapper: {
+      flexDirection: 'row',
+      marginRight: 12, // Gap between Icon and Text
+    },
+    
+    appleBtnText: {
+      color: colors.white,
+      fontSize: 16,
+      fontWeight: 'bold',
+      fontFamily: 'serif',
+    },    
   });
 
 export default getLoginStyle;

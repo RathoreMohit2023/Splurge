@@ -52,6 +52,7 @@ import NotificationReducer from '../Slice/NotificationSlice';
 import SettleUpRespondReducer from '../Slice/SettleUpRespondSlice';
 import DeleteGroupReducer from '../Slice/DeleteGroupSlice';
 import RemainderReducer from '../Slice/RemainderSlice';
+import DeleteAccountReducer from '../Slice/DeleteAccountSlice';
 
 const rootReducer = combineReducers({
   Login: LoginReducer,
@@ -95,7 +96,8 @@ const rootReducer = combineReducers({
   Notifications: NotificationReducer,
   SettleUpRespond : SettleUpRespondReducer,
   DeleteGroup : DeleteGroupReducer,
-  Remainder : RemainderReducer
+  Remainder : RemainderReducer,
+  DeleteAccount : DeleteAccountReducer
 });
 
 const persistConfig = {
@@ -120,6 +122,7 @@ const persistConfig = {
     'AddGroup',
     'Fcm',
     'Notifications',
+    'DeleteAccount',
   ],
   // blacklist: ["QuotationList", "ScheduleList"],
 };

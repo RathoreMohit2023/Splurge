@@ -12,7 +12,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard
 } from "react-native";
-import { darkLogo, googleLogo, MainLogo } from "../../Assets/Images";
+import { appleLogo, darkLogo, googleLogo, MainLogo } from "../../Assets/Images";
 import CustomInput from "../../components/CustomInput"; 
 import getLoginStyle from "../../styles/authenthication/LoginStyle";
 import { ThemeContext } from "../../components/ThemeContext";
@@ -23,10 +23,11 @@ import DashedLoader from "../../components/DashedLoader";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CheckBox from "@react-native-community/checkbox";
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import appleAuth from '@invertase/react-native-apple-authentication';
 
 // // IMPORTS: Add Vector Icons
 // import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-        
+
 const SignInScreen = ({ navigation }) => {
   const { colors, themeType } = useContext(ThemeContext);
   const styles = useMemo(() => getLoginStyle(colors), [colors]);
@@ -190,6 +191,59 @@ const SignInScreen = ({ navigation }) => {
     }
   };
 
+  const handleAppleSignUIn = async() => {
+    try{
+      const appleAuthResponse = await appleAuth.performRequest({
+        requestedOperation: appleAuth.Operation.LOGIN,
+        requestedScopes: [
+          appleAuth.Scope.EMAIL,
+          appleAuth.Scope.FULL_NAME,
+        ],
+      });
+
+      const { identifyToken, fullName, email, user} = appleAuthResponse;
+
+      if(!identifyToken){
+        setToastMsg("Apple Sign In failed");
+        setShowToast(true)
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('apple_id', user);
+      formData.append('email', email || '');
+      formData.append(
+        'fullname',
+        `${fullName?.givenName || ''} ${fullName?.familyName || ''}`
+      );
+      formData.append('token', identifyToken);
+
+      const result = await dispatch(GoogleLoginApi(formData));
+
+      const  respond = result?.payload;
+
+      if(
+        respond?.token || 
+        respond?.status === 200 ||
+        respond?.message?.toLowerCase().includes('Success')
+      ){
+        setToastMsg(respond?.message || 'Login Successful');
+        setShowToast(true);
+
+        setTimeout(() => {
+          navigation.replace('MainScreen');
+        }, 1000);
+      } else {
+        setToastMsg(respond?.message || 'Apple login failed');
+        setShowToast(true)
+      }
+    }
+    catch(error){
+      setToastMsg("Apple login error")
+      setShowToast(true)
+    }
+  }  
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <StatusBar
@@ -270,10 +324,44 @@ const SignInScreen = ({ navigation }) => {
 
                 <TouchableOpacity onPress={handleGoogleSignIn} style={styles.googleBtn} activeOpacity={0.8}>
                   <View style={styles.googleIconWrapper}>
-                   <Image source={googleLogo} style={styles.googleIcon} />
-                  <Text style={styles.googleBtnText}>Continue with Google</Text>
+                    <Image source={googleLogo} style={styles.googleIcon} />
+                    <Text style={styles.googleBtnText}>Continue with Google</Text>
                   </View>
                 </TouchableOpacity>
+
+                {/* <TouchableOpacity
+                    style={styles.appleBtn}
+                    onPress={handleAppleSignUIn}
+                    activeOpacity={0.8}
+                  >
+                    <View style={styles.appleIconWrapper}>
+                      <Image 
+                        source={appleLogo}
+                        style={styles.appleIcon}
+                      />
+                      <Text style={styles.appleBtnText}>
+                        Continue with Apple
+                      </Text>
+                    </View>
+                  </TouchableOpacity> */}
+
+                {Platform.OS === 'iOS' && (
+                  <TouchableOpacity
+                    style={styles.appleBtn}
+                    onPress={handleAppleSignUIn}
+                    activeOpacity={0.8}
+                  >
+                    <View style={styles.appleIconWrapper}>
+                      <Image 
+                        source={appleLogo}
+                        style={styles.appleIcon}
+                      />
+                      <Text style={styles.appleBtnText}>
+                        Continue with Apple
+                      </Text>   
+                    </View>
+                  </TouchableOpacity>
+                )}
 
                 <View style={styles.footerContainer}>
                   <Text style={styles.footerText}>Don't have an account? </Text>

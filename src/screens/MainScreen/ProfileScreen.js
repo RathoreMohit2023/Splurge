@@ -33,6 +33,7 @@ import { Img_url } from '../../Redux/NWConfig';
 import CustomAlert from '../../components/CustomAlert'; 
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { logout } from '../../Redux/Slice/LoginSlice';
+import { DeleteAccountApi } from '../../Redux/Api/GetDeleteAccountApi';
 
 const ProfileScreen = ({ navigation }) => {
   const { colors, themeType } = useContext(ThemeContext);
@@ -40,6 +41,12 @@ const ProfileScreen = ({ navigation }) => {
   const { GetUserDetailsData } = useSelector(state => state.GetUserDetails);
   const { GetTransactionData } = useSelector(state => state.GetTransaction);
   const { GetFriendsData } = useSelector(state => state.GetFriends || {});
+  const { DeleteAccountLoading, DeleteAccountData } = useSelector(
+    state => state.DeleteAccount
+  );
+  const { LoginData } = useSelector((state) => state.Login || {});
+  console.log('loginData', LoginData);
+  
   const dispatch = useDispatch();
   
   const [user, setUser] = useState('');
@@ -150,15 +157,47 @@ const ProfileScreen = ({ navigation }) => {
   const confirmDeleteAccount = async () => {
     setDeleteAlertVisible(false);
     try {
-      // Add your API call here: await deleteAccountAPI(user.id);
-      await GoogleSignin.signOut();
-      dispatch(logout());
-      setSnack({ visible: true, message: 'Account deleted successfully' });
+      const token = LoginData?.token;
+      const email = user?.email;
+
+      console.log("DELETE ACCOUNT DATA →", { token, email });
+  
+      if (!token || !email) {
+        setSnack({ visible: true, message: 'Session expired. Please login again.' });
+        return;
+      }
+  
+      const res = await dispatch(DeleteAccountApi({ token, email })).unwrap();
+  
+      if (res?.status === true) {
+        // Google logout
+        try {
+          await GoogleSignin.signOut();
+        } catch (e) {}
+  
+        // Clear redux + storage
+        dispatch(logout());
+  
+        // Reset navigation
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'LoginScreen' }],
+        });
+      } else {
+        setSnack({
+          visible: true,
+          message: res?.message || 'Failed to delete account',
+        });
+      }
     } catch (error) {
-      console.error("Failed to delete account: ", error);
-      setSnack({ visible: true, message: 'Failed to delete account' });
+      console.log('Delete account error:', error);
+      setSnack({
+        visible: true,
+        message: 'Something went wrong. Try again.',
+      });
     }
-  };
+  }; 
+  
 
   const profileImages = useMemo(() => {
     if (user?.profile_photo) {
@@ -243,8 +282,13 @@ const ProfileScreen = ({ navigation }) => {
             <View style={styles.menuCard}>
               {section.items.map((item, i) => (
                 <View key={i}>
+                  {/* <TouchableOpacity
+                    style={styles.menuItem}
+                    onPress={item.onPress}
+                  > */}
                   <TouchableOpacity
                     style={styles.menuItem}
+                    disabled={item.isDanger && DeleteAccountLoading}
                     onPress={item.onPress}
                   >
                     <View style={styles.menuLeft}>
