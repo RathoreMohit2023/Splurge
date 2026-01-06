@@ -8,6 +8,8 @@ require Pod::Executable.execute_command('node', ['-p',
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
 
+$RNFirebaseAsStaticFramework = true
+
 linkage = ENV['USE_FRAMEWORKS']
 if linkage != nil
   Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
@@ -16,6 +18,17 @@ end
 
 target 'SplurgeApp' do
   config = use_native_modules!
+
+    # Use Static Frameworks: Modern React Native (0.76 - 0.82) ke liye ye best hai
+  use_frameworks! :linkage => :static
+  
+  # Firebase aur Google Utilities ke liye modular headers
+  pod 'Firebase', :modular_headers => true
+  pod 'FirebaseCore', :modular_headers => true
+  pod 'GoogleUtilities', :modular_headers => true
+
+  pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
+
 
   use_react_native!(
     :path => config[:reactNativePath],

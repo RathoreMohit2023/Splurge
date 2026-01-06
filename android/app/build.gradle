@@ -1,6 +1,9 @@
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
+apply plugin: 'com.google.gms.google-services'
+apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
+
 
 /**
  * This is the configuration block to customize your React Native Android app.
@@ -86,12 +89,18 @@ android {
         versionName "1.0"
     }
     signingConfigs {
-        debug {
-            storeFile file('debug.keystore')
-            storePassword 'android'
-            keyAlias 'androiddebugkey'
-            keyPassword 'android'
-        }
+       debug {
+        storeFile file('splurge.keystore')
+        storePassword 'android'
+        keyAlias 'splurge'
+        keyPassword 'android'
+    }
+    release {
+        storeFile file('splurge.keystore')
+        storePassword 'android'
+        keyAlias 'splurge'
+        keyPassword 'android'
+    }
     }
     buildTypes {
         debug {
@@ -110,6 +119,8 @@ android {
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
+    implementation platform('com.google.firebase:firebase-bom:33.1.0')
+    implementation 'com.google.firebase:firebase-messaging'
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
