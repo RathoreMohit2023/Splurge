@@ -79,10 +79,9 @@ const ForgotPasswordScreen = ({ navigation }) => {
       })
     );
 
+    console.log('result', result)
+
     if(ForgoteApi.rejected.match(result)){
-      // Alert.alert("Error", 
-      //   "Something went wrong. Please try again.",
-      // );
       showSnack("Something went wrong. Please try again.");
       return;
     };
@@ -101,6 +100,8 @@ const ForgotPasswordScreen = ({ navigation }) => {
       navigation.navigate("signIn");
     }, 2000);
   };
+
+  console.log('handle send:',handleSend)
 
   return (
     <KeyboardAvoidingView
@@ -138,7 +139,6 @@ const ForgotPasswordScreen = ({ navigation }) => {
 
               <Text style={styles.title}>Reset Password</Text>
               <Text style={styles.subtitle}>
-                {/* Enter the email associated with your account and we’ll send you an email with instructions to reset your password. */}
                 Please enter the email address linked to your account. A secure password will be sent to your email to help you regain access.
               </Text>
 

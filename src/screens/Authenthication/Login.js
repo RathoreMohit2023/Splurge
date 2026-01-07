@@ -139,8 +139,7 @@ const SignInScreen = ({ navigation }) => {
        setShowToast(true);
      } 
   };
-
-
+  
   const handleGoogleSignIn = async () => {
     try {
       await GoogleSignin.hasPlayServices({showPlayServicesUpdateDialog: true});

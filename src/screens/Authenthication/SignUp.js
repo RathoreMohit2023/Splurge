@@ -81,6 +81,19 @@ const SignUp = ({ navigation }) => {
     }
   };
 
+  const handleInputChange = (key, value) => {
+    setUserData(prev => ({ ...prev, [key]: value }));
+    // Clear error for this field when user types
+    if (errors[key]) {
+      setErrors(prev => ({ ...prev, [key]: '' }));
+    }
+  }
+
+  const handleRemoveInterest = (interestToRemove) => {
+    const updatedInterests = userData.interest.filter(item => item !== interestToRemove);
+    handleInputChange('interest', updatedInterests);
+  }
+
   const registerUser = async () => {
     let valid = true;
     let tempErrors = {};
@@ -219,11 +232,19 @@ const SignUp = ({ navigation }) => {
                 styles.dropdownTrigger,
                 { borderColor: errors.interest ? colors.error : colors.border }
               ]}
+              // onPress={() => {
+              //   setClickedInterest(true);
+              //   dispatch(GetInterestApi());
+              //   setInterestModalVisible(true);
+              // }}    
               onPress={() => {
                 setClickedInterest(true);
-                dispatch(GetInterestApi());
-                setInterestModalVisible(true);
-              }}              
+                if (interestsList.length === 0) {
+                  dispatch(GetInterestApi());
+                } else {
+                  setInterestModalVisible(true);
+                }
+              }}                        
               activeOpacity={0.8}
             >
               <View style={{flexDirection: 'row', alignItems: 'center', flex: 1}}>
@@ -253,6 +274,29 @@ const SignUp = ({ navigation }) => {
               <Icon name="chevron-down" size={24} color={colors.textDisabled} />
             </TouchableOpacity>
             {errors.interest && <Text style={styles.errorText}>{errors.interest}</Text>}
+
+
+            {/* Chips Container */}
+
+            {userData.interest.length > 0 && (
+              <View style={styles.chipsContainer}>
+                {userData.interest.map((item, index) => {
+                  return(
+                    <View key={index} style={styles.chip}>
+                      <Text style={styles.chipText}>{item}</Text>
+                      <TouchableOpacity
+                        onPress={() =>  handleRemoveInterest(item)}>
+                        <Icon 
+                          name="close-circle" 
+                          size={18} 
+                          color={colors.theme}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  )
+                })}
+              </View>
+            )}
           </View>
 
           <CustomInput

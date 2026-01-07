@@ -34,6 +34,7 @@ import CustomAlert from '../../components/CustomAlert';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { logout } from '../../Redux/Slice/LoginSlice';
 import { DeleteAccountApi } from '../../Redux/Api/GetDeleteAccountApi';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ProfileScreen = ({ navigation }) => {
   const { colors, themeType } = useContext(ThemeContext);
@@ -180,6 +181,11 @@ const ProfileScreen = ({ navigation }) => {
         try {
           await GoogleSignin.signOut();
         } catch (e) {}
+
+        await AsyncStorage.multiRemove([
+          "savedEmail",
+          "savedPassword"
+        ])
         dispatch(logout());
       } else {
         setSnack({

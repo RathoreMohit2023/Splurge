@@ -109,6 +109,30 @@ const getSignUpStyle = (colors) => StyleSheet.create({
     fontSize: 14,
     fontFamily: 'serif',
   },
+  chipsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 12,
+    paddingHorizontal: 4,
+  },
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginRight: 8,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  chipText: {
+    fontSize: 14,
+    color: colors.text,
+    marginRight: 8,
+    fontFamily: 'serif',
+  },
 });
 
 export default getSignUpStyle;

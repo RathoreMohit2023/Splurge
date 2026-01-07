@@ -4,7 +4,7 @@ import { createMaterialTopTabNavigator } from "@react-navigation/material-top-ta
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import VideoScreen from "../../screens/MainScreen/learnTabs/Videos";
-import FounderScreen from "../../screens/MainScreen/learnTabs/founders";
+// import FounderScreen from "../../screens/MainScreen/learnTabs/founders";
 import ArticleScreen from "./learnTabs/Articles";
 import { ThemeContext } from "../../components/ThemeContext"; 
 import getResourceStyles from "../../styles/MainScreen/resourceStyle";
@@ -18,9 +18,11 @@ const ResourceScreen = () => {
   const styles = useMemo(() => getResourceStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
     const {GetVideoLoading } = useSelector(state => state.GetVideo);
-    const { GetFounderloading } = useSelector(state => state.GetFounder);
+    // const { GetFounderloading } = useSelector(state => state.GetFounder);
     const {GetArticleloading } = useSelector(state => state.GetArticle);
-  const isLoading = GetVideoLoading || GetFounderloading || GetArticleloading;
+  const isLoading = GetVideoLoading || 
+  // GetFounderloading || 
+  GetArticleloading;
 
   return (
     <View style={styles.container}>
@@ -73,7 +75,7 @@ const ResourceScreen = () => {
           sceneContainerStyle={{ backgroundColor: colors.background }}
         >
           <Tab.Screen name="Videos" component={VideoScreen} />
-          <Tab.Screen name="Founders" component={FounderScreen} />
+          {/* <Tab.Screen name="Founders" component={FounderScreen} /> */}
           <Tab.Screen name="Articles" component={ArticleScreen} />
         </Tab.Navigator>
       </View>
