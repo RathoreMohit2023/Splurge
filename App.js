@@ -6,8 +6,12 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { store, persistor } from './src/Redux/Store/Store';
 import { Provider } from 'react-redux';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import NetworkWrapper from './src/components/NetworkWrapper'; 
-
+import NetworkWrapper from './src/components/NetworkWrapper';
+import {
+  requestCameraPermission,
+  requestGalleryPermission,
+} from './src/services/RequestPermissions';
+import { requestPermissions } from './src/services/FcmService';
 const App = () => {
   useEffect(() => {
     GoogleSignin.configure({
@@ -17,16 +21,31 @@ const App = () => {
     });
   }, []);
 
+  useEffect(() => {
+    const requestAllPermissions = async () => {
+      const granted = await requestPermissions();
+      if (!granted) return;
+
+      const cameraGranted = await requestCameraPermission();
+      if (!cameraGranted) return;
+
+      const galleryGranted = await requestGalleryPermission();
+      if (!galleryGranted) return;
+
+      console.log('✅ All permissions granted');
+    };
+
+    requestAllPermissions();
+  }, []);
+
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
         <SafeAreaProvider>
           <ThemeProvider>
-            
             <NetworkWrapper>
-               <MainApp />
+              <MainApp />
             </NetworkWrapper>
-
           </ThemeProvider>
         </SafeAreaProvider>
       </PersistGate>
