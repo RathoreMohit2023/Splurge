@@ -30,7 +30,7 @@ import getProfileStyle from '../../styles/MainScreen/ProfileStyle';
 import { ThemeContext } from '../../components/ThemeContext';
 import { useDispatch, useSelector } from 'react-redux';
 import { Img_url } from '../../Redux/NWConfig';
-import CustomAlert from '../../components/CustomAlert'; 
+import CustomAlert from '../../components/CustomAlert';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { logout } from '../../Redux/Slice/LoginSlice';
 import { DeleteAccountApi } from '../../Redux/Api/GetDeleteAccountApi';
@@ -42,13 +42,12 @@ const ProfileScreen = ({ navigation }) => {
   const { GetTransactionData } = useSelector(state => state.GetTransaction);
   const { GetFriendsData } = useSelector(state => state.GetFriends || {});
   const { DeleteAccountLoading, DeleteAccountData } = useSelector(
-    state => state.DeleteAccount
+    state => state.DeleteAccount,
   );
-  const { LoginData } = useSelector((state) => state.Login || {});
-  console.log('loginData', LoginData);
-  
+  const { LoginData } = useSelector(state => state.Login || {});
+
   const dispatch = useDispatch();
-  
+
   const [user, setUser] = useState('');
   const [snack, setSnack] = useState({ visible: false, message: '' });
   const [totalFriends, setTotalFriends] = useState(0);
@@ -129,7 +128,9 @@ const ProfileScreen = ({ navigation }) => {
   const stats = [
     {
       label: 'Total Spent',
-      value: `₹${currentMonthTotal.toLocaleString(undefined, {maximumFractionDigits: 0})}`,
+      value: `₹${currentMonthTotal.toLocaleString(undefined, {
+        maximumFractionDigits: 0,
+      })}`,
       icon: CreditCard,
       color: '#FFD700',
     },
@@ -143,14 +144,14 @@ const ProfileScreen = ({ navigation }) => {
   }, [GetUserDetailsData]);
 
   const handleLogout = () => setLogoutAlertVisible(true);
-  
+
   const confirmLogout = async () => {
     setLogoutAlertVisible(false);
     try {
       await GoogleSignin.signOut();
       dispatch(logout());
     } catch (error) {
-      console.error("Failed to sign out: ", error);
+      console.error('Failed to sign out: ', error);
     }
   };
 
@@ -159,30 +160,27 @@ const ProfileScreen = ({ navigation }) => {
     try {
       const token = LoginData?.token;
       const email = user?.email;
+      const postData = {
+        email: email,
+      };
 
-      console.log("DELETE ACCOUNT DATA →", { token, email });
-  
       if (!token || !email) {
-        setSnack({ visible: true, message: 'Session expired. Please login again.' });
+        setSnack({
+          visible: true,
+          message: 'Session expired. Please login again.',
+        });
         return;
       }
-  
-      const res = await dispatch(DeleteAccountApi({ token, email })).unwrap();
-  
+
+      const res = await dispatch(
+        DeleteAccountApi({ token, postData }),
+      ).unwrap();
+
       if (res?.status === true) {
-        // Google logout
         try {
           await GoogleSignin.signOut();
         } catch (e) {}
-  
-        // Clear redux + storage
         dispatch(logout());
-  
-        // Reset navigation
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'LoginScreen' }],
-        });
       } else {
         setSnack({
           visible: true,
@@ -196,8 +194,7 @@ const ProfileScreen = ({ navigation }) => {
         message: 'Something went wrong. Try again.',
       });
     }
-  }; 
-  
+  };
 
   const profileImages = useMemo(() => {
     if (user?.profile_photo) {
@@ -222,7 +219,7 @@ const ProfileScreen = ({ navigation }) => {
       >
         <View style={[styles.headerContainer, { paddingTop: insets.top }]}>
           <View style={styles.profileHeader}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.avatarContainer}
               onPress={() => user?.profile_photo && setImageModalVisible(true)}
               activeOpacity={0.8}
@@ -235,7 +232,10 @@ const ProfileScreen = ({ navigation }) => {
               ) : (
                 <Avatar.Text
                   size={80}
-                  label={user?.fullname?.split(' ').map(n => n[0]).join('')}
+                  label={user?.fullname
+                    ?.split(' ')
+                    .map(n => n[0])
+                    .join('')}
                   style={styles.avatar}
                 />
               )}
@@ -244,7 +244,7 @@ const ProfileScreen = ({ navigation }) => {
             <View style={styles.userInfo}>
               <Text style={styles.userName}>{user?.fullname}</Text>
               <Text style={styles.userHandle}>{user?.code}</Text>
-              
+
               {/* Corrected: replaced div with View */}
               <View style={styles.contactRow}>
                 <Phone size={14} color={colors.textSecondary} />
@@ -292,19 +292,33 @@ const ProfileScreen = ({ navigation }) => {
                     onPress={item.onPress}
                   >
                     <View style={styles.menuLeft}>
-                      <View style={[
-                        styles.menuIconBox,
-                        item.isDanger && { backgroundColor: 'rgba(255, 68, 68, 0.1)' }
-                      ]}>
-                        <item.icon size={18} color={item.isDanger ? colors.error : colors.white} />
+                      <View
+                        style={[
+                          styles.menuIconBox,
+                          item.isDanger && {
+                            backgroundColor: 'rgba(255, 68, 68, 0.1)',
+                          },
+                        ]}
+                      >
+                        <item.icon
+                          size={18}
+                          color={item.isDanger ? colors.error : colors.white}
+                        />
                       </View>
-                      <Text style={[styles.menuLabel, item.isDanger && { color: colors.error }]}>
+                      <Text
+                        style={[
+                          styles.menuLabel,
+                          item.isDanger && { color: colors.error },
+                        ]}
+                      >
                         {item.label}
                       </Text>
                     </View>
                     <ChevronRight size={18} color={colors.textSecondary} />
                   </TouchableOpacity>
-                  {i < section.items.length - 1 && <Divider style={styles.divider} />}
+                  {i < section.items.length - 1 && (
+                    <Divider style={styles.divider} />
+                  )}
                 </View>
               ))}
             </View>
@@ -320,17 +334,29 @@ const ProfileScreen = ({ navigation }) => {
       </ScrollView>
 
       {/* Modals & Alerts */}
-      <Modal visible={isImageModalVisible} transparent onRequestClose={() => setImageModalVisible(false)}>
+      <Modal
+        visible={isImageModalVisible}
+        transparent
+        onRequestClose={() => setImageModalVisible(false)}
+      >
         <ImageViewer
           imageUrls={profileImages}
           enableSwipeDown
           onSwipeDown={() => setImageModalVisible(false)}
           renderHeader={() => (
-            <TouchableOpacity 
-               style={{ position: 'absolute', top: insets.top + 20, right: 20, zIndex: 999, padding: 10, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 20 }} 
-               onPress={() => setImageModalVisible(false)}
+            <TouchableOpacity
+              style={{
+                position: 'absolute',
+                top: insets.top + 20,
+                right: 20,
+                zIndex: 999,
+                padding: 10,
+                backgroundColor: 'rgba(0,0,0,0.5)',
+                borderRadius: 20,
+              }}
+              onPress={() => setImageModalVisible(false)}
             >
-               <X size={24} color="white" />
+              <X size={24} color="white" />
             </TouchableOpacity>
           )}
         />
@@ -340,7 +366,8 @@ const ProfileScreen = ({ navigation }) => {
         visible={isLogoutAlertVisible}
         title="Logout"
         message="Are you sure you want to logout?"
-        showCancel confirmText="Logout"
+        showCancel
+        confirmText="Logout"
         onCancel={() => setLogoutAlertVisible(false)}
         onConfirm={confirmLogout}
       />
@@ -349,7 +376,8 @@ const ProfileScreen = ({ navigation }) => {
         visible={isDeleteAlertVisible}
         title="Delete Account"
         message="Are you sure? This action cannot be undone."
-        showCancel confirmText="Delete"
+        showCancel
+        confirmText="Delete"
         onCancel={() => setDeleteAlertVisible(false)}
         onConfirm={confirmDeleteAccount}
       />
@@ -358,7 +386,10 @@ const ProfileScreen = ({ navigation }) => {
         visible={snack.visible}
         onDismiss={() => setSnack({ visible: false, message: '' })}
         duration={2000}
-        style={{ backgroundColor: colors.surface, marginBottom: insets.bottom + 10 }}
+        style={{
+          backgroundColor: colors.surface,
+          marginBottom: insets.bottom + 10,
+        }}
       >
         <Text style={{ color: colors.text }}>{snack.message}</Text>
       </Snackbar>

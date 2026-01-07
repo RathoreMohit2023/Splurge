@@ -1,28 +1,28 @@
-import { createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
-import { BASE_URL, DeleteAccount_Url} from "../NWConfig";
+import { createAsyncThunk } from '@reduxjs/toolkit';
+import axios from 'axios';
+import { BASE_URL, DeleteAccount_Url } from '../NWConfig';
+
+const url = `${BASE_URL}${DeleteAccount_Url}`;
 
 export const DeleteAccountApi = createAsyncThunk(
-    'DeleteAccount',
-    async ({token, email}, {rejectWithValue}) => {
-        try{
-            const response = await axios.delete(
-                `${BASE_URL}${DeleteAccount_Url}?email=${email}`, 
-                {
-                    headers: {
-                        "Authorization": `Bearer ${token}`,
-                    },
-                }
-            );
+  'DeleteAccount',
+  async ({ token, postData }) => {
 
-            const result = response.data;
-            console.log("DeleteAccountApi result", result)
+    try {
+        const response = await axios.delete(url, {
+            data: postData, 
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`,
+            }
+          });
+          
 
-            return result;
-        }
-        catch(error){
-            console.error("DeleteAccountApi error:", error.response?.data);
-            return rejectWithValue(error.response?.data);
-        }
+      const result = response.data;
+
+      return result;
+    } catch (error) {
+      return error?.response?.data;
     }
+  },
 );
