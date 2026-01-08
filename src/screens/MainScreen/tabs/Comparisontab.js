@@ -16,6 +16,7 @@ import {
   XCircle,
   BrainCircuit,
   Layers,
+  History
 } from 'lucide-react-native';
 
 import { ThemeContext } from '../../../components/ThemeContext';
@@ -86,23 +87,62 @@ const ComparisonTab = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchAiData = async () => {
-      if (GetWishlistLoading || GetTransactionLoading) return;
-      const interests = parseInterest(LoginData?.user?.interest);
-      if (
-        interests.length > 0 &&
-        totalSpent > 0 &&
-        formattedWishlist.length > 0
-      ) {
-        setIsAiLoading(true);
-        const result = await GeminiService({ totalSpent, wishlist: formattedWishlist, interests });
+  // useEffect(() => {
+  //   const fetchAiData = async () => {
+  //     if (GetWishlistLoading || GetTransactionLoading) return;
+  //     const interests = parseInterest(LoginData?.user?.interest);
+  //     if (
+  //       interests.length > 0 &&
+  //       totalSpent > 0 &&
+  //       formattedWishlist.length > 0
+  //     ) {
+  //       setIsAiLoading(true);
+  //       const result = await GeminiService({ totalSpent, wishlist: formattedWishlist, interests });
+  //       setAiData(result);
+  //       setIsAiLoading(false);
+  //     } else {
+  //       setIsAiLoading(false);
+  //     }
+  //   };
+  //   fetchAiData();
+  // }, [
+  //   LoginData,
+  //   currentMonthTransactions,
+  //   GetWishlistData,
+  //   GetWishlistLoading,
+  //   GetTransactionLoading,
+  // ]);
+
+  const fetchAiData = async () => {
+    if (GetWishlistLoading || GetTransactionLoading) return;
+  
+    const interests = parseInterest(LoginData?.user?.interest);
+  
+    if (
+      interests.length > 0 &&
+      totalSpent > 0 &&
+      formattedWishlist.length > 0
+    ) {
+      setIsAiLoading(true);
+      try {
+        const result = await GeminiService({
+          totalSpent,
+          wishlist: formattedWishlist,
+          interests,
+        });
         setAiData(result);
-        setIsAiLoading(false);
-      } else {
+      } catch (error) {
+        setAiData(null);
+      } finally {
         setIsAiLoading(false);
       }
-    };
+    } else {
+      setAiData(null);
+      setIsAiLoading(false);
+    }
+  };
+  
+  useEffect(() => {
     fetchAiData();
   }, [
     LoginData,
@@ -110,7 +150,12 @@ const ComparisonTab = () => {
     GetWishlistData,
     GetWishlistLoading,
     GetTransactionLoading,
-  ]);
+  ]);  
+
+  const fetchInitialData = () => {
+    fetchAiData(); // 🔥 manually re-run AI
+  };
+  
 
   // --- LOGIC: Smart Transaction Matching ---
   const getTransactionBundle = (targetPrice) => {
@@ -211,8 +256,16 @@ const ComparisonTab = () => {
       {renderMajorTransactionCard()}
 
       <View style={styles.sectionHeaderContainer}>
-        <Text style={styles.sectionTitle}>Opportunity Cost</Text>
-        <Text style={styles.sectionSubtitle}>This Month</Text>
+        <View>
+          <Text style={styles.sectionTitle}>Opportunity Cost</Text>
+          <Text style={styles.sectionSubtitle}>This Month</Text>
+        </View>
+        <TouchableOpacity
+          onPress={fetchInitialData}
+          style={styles.headerIconBtn}
+        >
+          <History size={22} color={colors.textSecondary} />
+        </TouchableOpacity>
       </View>
     </View>
   );

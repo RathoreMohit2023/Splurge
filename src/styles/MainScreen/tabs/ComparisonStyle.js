@@ -25,6 +25,10 @@ const getComparisonStyles = (colors) => StyleSheet.create({
   sectionHeaderContainer: {
     marginBottom: 8,
     // marginTop: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    // marginBottom: 20,
   },
   sectionTitle: { 
     color: colors.text, 
@@ -285,6 +289,13 @@ const getComparisonStyles = (colors) => StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     fontFamily : 'serif',
+  },
+  headerIconBtn: {
+    padding: 10,
+    backgroundColor: colors.tintedThemeColor,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
 });
 
