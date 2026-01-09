@@ -24,15 +24,23 @@ const App = () => {
   useEffect(() => {
     const requestAllPermissions = async () => {
       const granted = await requestPermissions();
-      if (!granted) return;
+      if (!granted) {
+        console.log('❌ General permissions denied');
+      }
 
       const cameraGranted = await requestCameraPermission();
-      if (!cameraGranted) return;
+      if (!cameraGranted) {
+        console.log('❌ Camera permission denied');
+      }
 
       const galleryGranted = await requestGalleryPermission();
-      if (!galleryGranted) return;
+      if (!galleryGranted) {
+        console.log('❌ Gallery permission denied');
+      }
 
-      console.log('✅ All permissions granted');
+      if (granted && cameraGranted && galleryGranted) {
+        console.log('✅ All permissions granted');
+      }
     };
 
     requestAllPermissions();

@@ -1,78 +1,65 @@
 import { PermissionsAndroid, Platform, Alert } from 'react-native';
-import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
+import { check, request, PERMISSIONS, RESULTS, openSettings } from 'react-native-permissions';
 
-// Helper function to check/request permission using react-native-permissions (Good for iOS & Android)
-const checkAndRequestPermission = async (permission) => {
-  try {
-    const result = await check(permission);
-    if (result === RESULTS.GRANTED || result === RESULTS.LIMITED) {
-      return true;
-    }
-    const requestResult = await request(permission);
-    return requestResult === RESULTS.GRANTED || requestResult === RESULTS.LIMITED;
-  } catch (error) {
-    console.warn('Permission error:', error);
-    return false;
-  }
+const showBlockedAlert = (typeLabel) => {
+  return new Promise((resolve) => {
+    Alert.alert(
+      'Permission Blocked',
+      `${typeLabel} access is blocked. Please enable it in the App Settings to continue.`,
+      [
+        { 
+          text: 'Cancel', 
+          style: 'cancel', 
+          onPress: () => resolve(false) 
+        },
+        { 
+          text: 'Open Settings', 
+          onPress: () => {
+            openSettings();
+            resolve(false);
+          } 
+        },
+      ],
+      { cancelable: false }
+    );
+  });
 };
 
-
 export const requestCameraPermission = async () => {
-  // --- iOS Logic ---
   if (Platform.OS === 'ios') {
-    const hasPermission = await checkAndRequestPermission(PERMISSIONS.IOS.CAMERA);
-    if (!hasPermission) {
-      Alert.alert('Permission Required', 'Camera access is required to capture photos.');
-    }
-    return hasPermission;
+    const res = await check(PERMISSIONS.IOS.CAMERA);
+    if (res === RESULTS.GRANTED) return true;
+    if (res === RESULTS.BLOCKED) return await showBlockedAlert('Camera');
+    
+    const requestResult = await request(PERMISSIONS.IOS.CAMERA);
+    return requestResult === RESULTS.GRANTED;
   }
 
-  // --- Android Logic ---
-  try {
-    const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.CAMERA);
+  // Android Logic
+  const status = await check(PERMISSIONS.ANDROID.CAMERA);
+  if (status === RESULTS.GRANTED) return true;
+  if (status === RESULTS.BLOCKED) return await showBlockedAlert('Camera');
 
-    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-      return true;
-    }
-
-    Alert.alert('Permission Required', 'Camera access is required to capture photos.');
-    return false;
-  } catch (e) {
-    console.warn('Camera permission error:', e);
-    return false;
-  }
+  const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.CAMERA);
+  return granted === PermissionsAndroid.RESULTS.GRANTED;
 };
 
 export const requestGalleryPermission = async () => {
-  // --- iOS Logic ---
-  if (Platform.OS === 'ios') {
-    const hasPermission = await checkAndRequestPermission(PERMISSIONS.IOS.PHOTO_LIBRARY);
-    if (!hasPermission) {
-      Alert.alert('Permission Required', 'Photo access is required to upload images.');
-    }
-    return hasPermission;
-  }
+  const galleryPerm = Platform.OS === 'ios' 
+    ? PERMISSIONS.IOS.PHOTO_LIBRARY 
+    : (Platform.Version >= 33 ? PERMISSIONS.ANDROID.READ_MEDIA_IMAGES : PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE);
 
-  // --- Android Logic ---
-  try {
-    let permission;
+  const status = await check(galleryPerm);
+  if (status === RESULTS.GRANTED || status === RESULTS.LIMITED) return true;
+  if (status === RESULTS.BLOCKED) return await showBlockedAlert('Gallery');
 
-    if (Platform.Version >= 33) {
-      permission = PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES;
-    } else {
-      permission = PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE;
-    }
-
-    const granted = await PermissionsAndroid.request(permission);
-
-    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-      return true;
-    }
-
-    Alert.alert('Permission Required', 'Photo access is required to upload images.');
-    return false;
-  } catch (e) {
-    console.warn('Gallery permission error:', e);
-    return false;
+  if (Platform.OS === 'android') {
+    const granted = await PermissionsAndroid.request(
+      Platform.Version >= 33 ? PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES : PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE
+    );
+    return granted === PermissionsAndroid.RESULTS.GRANTED;
+  } else {
+    const requestResult = await request(PERMISSIONS.IOS.PHOTO_LIBRARY);
+    return requestResult === RESULTS.GRANTED || requestResult === RESULTS.LIMITED;
   }
 };

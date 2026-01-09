@@ -291,11 +291,17 @@ const getComparisonStyles = (colors) => StyleSheet.create({
     fontFamily : 'serif',
   },
   headerIconBtn: {
-    padding: 10,
-    backgroundColor: colors.tintedThemeColor,
+    padding: 8,
+    backgroundColor: colors.blue,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.border,
+  },
+  headerIconBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: colors.white,
+    fontFamily : 'serif',
   },
 });
 

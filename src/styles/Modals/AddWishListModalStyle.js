@@ -9,6 +9,16 @@ const getAddWishListModalStyle = (colors) => StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    // KeyboardAvoidingView ke liye zaroori hai
+    width: "100%",
+    height: "100%", 
+  },
   modalContainer: {
     width: "90%",
     backgroundColor: colors.surface,

@@ -10,7 +10,6 @@ import {
   Keyboard
 } from "react-native";
 import { X, RotateCcw } from "lucide-react-native";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 import CustomInput from "../components/CustomInput";
 import getAddWishListModalStyle from "../styles/Modals/AddWishListModalStyle";
@@ -74,7 +73,7 @@ const AddWishListModal = ({ visible, onClose, onSave }) => {
       {/* KeyboardAvoidingView top level par hona chahiye */}
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+              behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={styles.modalOverlay}>
@@ -93,12 +92,7 @@ const AddWishListModal = ({ visible, onClose, onSave }) => {
                 </View>
               </View>
 
-              {/* Scrollable Form Content */}
-              <KeyboardAwareScrollView 
-                showsVerticalScrollIndicator={false}
-                enableOnAndroid={true}
-                extraScrollHeight={20}
-              >
+            
                 <View style={styles.form}>
                   <CustomInput
                     label="Item Name"
@@ -142,7 +136,6 @@ const AddWishListModal = ({ visible, onClose, onSave }) => {
                     <Text style={styles.saveBtnText}>Save Item</Text>
                   </TouchableOpacity>
                 </View>
-              </KeyboardAwareScrollView>
             </View>
           </View>
         </TouchableWithoutFeedback>

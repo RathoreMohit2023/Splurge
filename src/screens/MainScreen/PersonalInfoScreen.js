@@ -31,6 +31,7 @@ import { GetInterestApi } from '../../Redux/Api/GetInterestApi';
 import { GetUserDetailsApi } from '../../Redux/Api/GetUserDetailsApi';
 import { Img_url } from '../../Redux/NWConfig';
 import getPersonalInfoStyle from '../../styles/MainScreen/PersonalInfoStyle';
+import {requestCamera, requestGallery } from '../../services/Permission';
 
 const PersonalInfoScreen = ({ navigation }) => {
   const { colors, themeType } = useContext(ThemeContext);
@@ -60,7 +61,7 @@ const PersonalInfoScreen = ({ navigation }) => {
     bio: '',
     interest: [],
   });
-  
+
   // 1. New Error State
   const [errors, setErrors] = useState({});
 
@@ -129,38 +130,6 @@ const PersonalInfoScreen = ({ navigation }) => {
     }
   }, [GetInterestData, clickedInterest]);
 
-
-  const requestMediaPermissions = async () => {
-    if (Platform.OS !== 'android') return true;
-  
-    try {
-      if (Platform.Version >= 33) {
-        const result = await PermissionsAndroid.requestMultiple([
-          PermissionsAndroid.PERMISSIONS.CAMERA,
-          PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES,
-        ]);
-  
-        return (
-          result['android.permission.CAMERA'] === PermissionsAndroid.RESULTS.GRANTED &&
-          result['android.permission.READ_MEDIA_IMAGES'] === PermissionsAndroid.RESULTS.GRANTED
-        );
-      } else {
-        const result = await PermissionsAndroid.requestMultiple([
-          PermissionsAndroid.PERMISSIONS.CAMERA,
-          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-        ]);
-  
-        return (
-          result['android.permission.CAMERA'] === PermissionsAndroid.RESULTS.GRANTED &&
-          result['android.permission.READ_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED
-        );
-      }
-    } catch (err) {
-      console.warn(err);
-      return false;
-    }
-  };
-
   // --- Image Handling ---
   const handleImageResponse = response => {
     if (response.didCancel || response.errorMessage) return;
@@ -173,9 +142,9 @@ const PersonalInfoScreen = ({ navigation }) => {
     });
   };
 
-  const openCamera = async() => {
-    const granted = await requestMediaPermissions();
-  if (!granted) return;
+  const openCamera = async () => {
+    const cameraGranted = await requestCamera();
+    if (!cameraGranted) return;
     launchCamera(
       { mediaType: 'photo', saveToPhotos: true, quality: 0.8 },
       handleImageResponse,
@@ -183,8 +152,8 @@ const PersonalInfoScreen = ({ navigation }) => {
   };
 
   const openGallery = async () => {
-    const granted = await requestMediaPermissions();
-  if (!granted) return;
+    const galleryGranted = await requestGallery();
+    if (!galleryGranted) return;
     launchImageLibrary(
       { mediaType: 'photo', quality: 0.8 },
       handleImageResponse,
@@ -200,8 +169,10 @@ const PersonalInfoScreen = ({ navigation }) => {
     }
   };
 
-  const handleRemoveInterest = (interestToRemove) => {
-    const updatedInterests = form.interest.filter(item => item !== interestToRemove);
+  const handleRemoveInterest = interestToRemove => {
+    const updatedInterests = form.interest.filter(
+      item => item !== interestToRemove,
+    );
     handleInputChange('interest', updatedInterests);
   };
 
@@ -212,39 +183,39 @@ const PersonalInfoScreen = ({ navigation }) => {
 
     // Fullname Validation
     if (!form.fullname.trim()) {
-      tempErrors.fullname = "Full Name is required";
+      tempErrors.fullname = 'Full Name is required';
       isValid = false;
     }
 
     // Email Validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!form.email.trim()) {
-      tempErrors.email = "Email is required";
+      tempErrors.email = 'Email is required';
       isValid = false;
     } else if (!emailRegex.test(form.email)) {
-      tempErrors.email = "Please enter a valid email";
+      tempErrors.email = 'Please enter a valid email';
       isValid = false;
     }
 
     // Mobile Validation
     const mobileRegex = /^[0-9]{10}$/;
     if (!form.mobile) {
-      tempErrors.mobile = "Phone number is required";
+      tempErrors.mobile = 'Phone number is required';
       isValid = false;
     } else if (!mobileRegex.test(form.mobile)) {
-      tempErrors.mobile = "Enter a valid 10-digit number";
+      tempErrors.mobile = 'Enter a valid 10-digit number';
       isValid = false;
     }
 
     // Location Validation
     if (!form.location.trim()) {
-      tempErrors.location = "Location is required";
+      tempErrors.location = 'Location is required';
       isValid = false;
     }
 
     // Interest Validation
     if (form.interest.length === 0) {
-      tempErrors.interest = "Please select at least one interest";
+      tempErrors.interest = 'Please select at least one interest';
       isValid = false;
     }
 
@@ -256,7 +227,7 @@ const PersonalInfoScreen = ({ navigation }) => {
   const handleSave = async () => {
     // Run Validation
     if (!validateForm()) {
-      showSnack("Please fix the errors before saving.");
+      showSnack('Please fix the errors before saving.');
       return;
     }
 
@@ -273,21 +244,26 @@ const PersonalInfoScreen = ({ navigation }) => {
 
     if (photoFile) {
       formData.append('image', {
-        uri: Platform.OS === 'android' ? photoFile.uri : photoFile.uri.replace('file://', ''),
+        uri:
+          Platform.OS === 'android'
+            ? photoFile.uri
+            : photoFile.uri.replace('file://', ''),
         type: photoFile.type,
         name: photoFile.name,
       });
     }
 
     try {
-      const result = await dispatch(EditProfileApi({ formData, token })).unwrap();
+      const result = await dispatch(
+        EditProfileApi({ formData, token }),
+      ).unwrap();
       if (result?.status === true) {
         showSnack(result?.message);
-         dispatch(GetUserDetailsApi(LoginData.token));
+        dispatch(GetUserDetailsApi(LoginData.token));
         setTimeout(() => navigation.goBack(), 500);
       } else {
         showSnack(result?.message);
-         dispatch(GetUserDetailsApi(LoginData.token));
+        dispatch(GetUserDetailsApi(LoginData.token));
       }
     } catch (error) {
       showSnack('Something went wrong. Please try again.');
@@ -324,12 +300,17 @@ const PersonalInfoScreen = ({ navigation }) => {
               <View style={styles.avatarPlaceholder}>
                 {profileImage ? (
                   <Image
-                    source={{ uri: photoFile ? profileImage : Img_url + profileImage }}
+                    source={{
+                      uri: photoFile ? profileImage : Img_url + profileImage,
+                    }}
                     style={styles.avatarImage}
                   />
                 ) : (
                   <Text style={styles.avatarInitials}>
-                    {form.fullname?.split(' ').map(n => n[0]).join('')}
+                    {form.fullname
+                      ?.split(' ')
+                      .map(n => n[0])
+                      .join('')}
                   </Text>
                 )}
               </View>
@@ -380,11 +361,11 @@ const PersonalInfoScreen = ({ navigation }) => {
             />
 
             {/* Interest Dropdown */}
-            <View style={styles.dropdownWrapper}> 
+            <View style={styles.dropdownWrapper}>
               <TouchableOpacity
                 style={[
                   styles.dropdownTrigger,
-                  errors.interest ? { borderColor: colors.error } : null // Highlight border on error
+                  errors.interest ? { borderColor: colors.error } : null, // Highlight border on error
                 ]}
                 onPress={() => {
                   setClickedInterest(true);
@@ -396,7 +377,13 @@ const PersonalInfoScreen = ({ navigation }) => {
                 }}
                 activeOpacity={0.8}
               >
-                <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1}}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    flex: 1,
+                  }}
+                >
                   <MaterialCommunityIcons
                     name="heart-outline"
                     size={22}
@@ -419,7 +406,7 @@ const PersonalInfoScreen = ({ navigation }) => {
                   color={errors.interest ? colors.error : colors.theme}
                 />
               </TouchableOpacity>
-              
+
               {/* Manual Error Text for Interest (matching CustomInput style) */}
               {errors.interest && (
                 <Text style={styles.errorText}>{errors.interest}</Text>
@@ -431,11 +418,13 @@ const PersonalInfoScreen = ({ navigation }) => {
                   {form.interest.map((item, index) => (
                     <View key={index} style={styles.chip}>
                       <Text style={styles.chipText}>{item}</Text>
-                      <TouchableOpacity onPress={() => handleRemoveInterest(item)}>
-                        <MaterialCommunityIcons 
-                          name="close-circle" 
-                          size={18} 
-                          color={colors.theme} 
+                      <TouchableOpacity
+                        onPress={() => handleRemoveInterest(item)}
+                      >
+                        <MaterialCommunityIcons
+                          name="close-circle"
+                          size={18}
+                          color={colors.theme}
                         />
                       </TouchableOpacity>
                     </View>

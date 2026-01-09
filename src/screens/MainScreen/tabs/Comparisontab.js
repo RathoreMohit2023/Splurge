@@ -4,6 +4,7 @@ import {
   FlatList,
   ActivityIndicator,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { Text } from 'react-native-paper';
 import {
@@ -35,11 +36,13 @@ const ComparisonTab = () => {
   const { GetTransactionData, GetTransactionLoading } = useSelector(
     state => state.GetTransaction || {},
   );
+   const { GetUserDetailsData, GetUserDetailsLoading } = useSelector(
+      state => state.GetUserDetails,
+    );
 
   const [aiData, setAiData] = useState(null);
-  const [isAiLoading, setIsAiLoading] = useState(true);
+  const [isAiLoading, setIsAiLoading] = useState(false);
 
-  // --- DATA PROCESSING ---
   const currentMonthTransactions = useMemo(() => {
     if (!GetTransactionData?.get_transactions) return [];
     const now = new Date();
@@ -66,6 +69,7 @@ const ComparisonTab = () => {
       price: parseFloat(item.price),
     }));
   }, [GetWishlistData]);
+  
 
   const parseInterest = raw => {
     try {
@@ -87,36 +91,19 @@ const ComparisonTab = () => {
     }
   };
 
-  // useEffect(() => {
-  //   const fetchAiData = async () => {
-  //     if (GetWishlistLoading || GetTransactionLoading) return;
-  //     const interests = parseInterest(LoginData?.user?.interest);
-  //     if (
-  //       interests.length > 0 &&
-  //       totalSpent > 0 &&
-  //       formattedWishlist.length > 0
-  //     ) {
-  //       setIsAiLoading(true);
-  //       const result = await GeminiService({ totalSpent, wishlist: formattedWishlist, interests });
-  //       setAiData(result);
-  //       setIsAiLoading(false);
-  //     } else {
-  //       setIsAiLoading(false);
-  //     }
-  //   };
-  //   fetchAiData();
-  // }, [
-  //   LoginData,
-  //   currentMonthTransactions,
-  //   GetWishlistData,
-  //   GetWishlistLoading,
-  //   GetTransactionLoading,
-  // ]);
+  const userData = GetUserDetailsData?.user_details[0]
 
   const fetchAiData = async () => {
     if (GetWishlistLoading || GetTransactionLoading) return;
   
-    const interests = parseInterest(LoginData?.user?.interest);
+    const interests = parseInterest(userData?.interest);
+
+    if (interests.length === 0) {
+      Alert.alert("Update Profile", "Please update your interests in your profile to unlock AI insights.");
+      setAiData(null);
+      setIsAiLoading(false);
+      return;
+    }
   
     if (
       interests.length > 0 &&
@@ -141,35 +128,19 @@ const ComparisonTab = () => {
       setIsAiLoading(false);
     }
   };
-  
-  useEffect(() => {
-    fetchAiData();
-  }, [
-    LoginData,
-    currentMonthTransactions,
-    GetWishlistData,
-    GetWishlistLoading,
-    GetTransactionLoading,
-  ]);  
+
 
   const fetchInitialData = () => {
-    fetchAiData(); // 🔥 manually re-run AI
+    fetchAiData(); 
   };
   
-
-  // --- LOGIC: Smart Transaction Matching ---
   const getTransactionBundle = (targetPrice) => {
-    // 1. PRIORITY: Check for a SINGLE transaction that is "Nearby" or covers the cost.
-    // We look for any transaction amount >= targetPrice.
-    // We sort ASCENDING to find the one closest to the target price (the smallest one that still affords it).
-    
     const possibleSingleMatches = currentMonthTransactions
       .filter(t => parseFloat(t.amount) >= targetPrice)
       .sort((a, b) => parseFloat(a.amount) - parseFloat(b.amount));
 
     if (possibleSingleMatches.length > 0) {
-      // Found a single transaction that covers it!
-      const bestMatch = possibleSingleMatches[0]; // The one closest to the price
+      const bestMatch = possibleSingleMatches[0];
       return {
         isAffordable: true,
         transactions: [bestMatch],
@@ -177,8 +148,6 @@ const ComparisonTab = () => {
       };
     }
 
-    // 2. FALLBACK: Accumulate multiple transactions
-    // If no single transaction is big enough, sort DESCENDING to combine the biggest expenses first.
     const sortedDescending = [...currentMonthTransactions].sort((a, b) => parseFloat(b.amount) - parseFloat(a.amount));
     
     let accumulated = 0;
@@ -196,8 +165,6 @@ const ComparisonTab = () => {
       totalAccumulated: accumulated
     };
   };
-
-  // --- UI RENDER FUNCTIONS ---
 
   const renderListHeader = () => (
     <View style={styles.listHeaderContainer}>
@@ -264,7 +231,7 @@ const ComparisonTab = () => {
           onPress={fetchInitialData}
           style={styles.headerIconBtn}
         >
-          <History size={22} color={colors.textSecondary} />
+          <Text style={styles.headerIconBtnText}>Get AI Insights</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -273,7 +240,6 @@ const ComparisonTab = () => {
   const renderMajorTransactionCard = () => {
     if (currentMonthTransactions.length < 2 || !GetWishlistData?.get_wishlists) return null;
 
-    // Logic: Combined Top 3 Transactions
     const topTransactions = [...currentMonthTransactions]
       .sort((a, b) => parseFloat(b.amount) - parseFloat(a.amount))
       .slice(0, 3); 
@@ -336,13 +302,11 @@ const ComparisonTab = () => {
         renderItem={({ item }) => {
           const itemPrice = parseFloat(item.price);
           
-          // Get Bundle (Single "Nearby" or Multiple)
           const { isAffordable, transactions, totalAccumulated } = getTransactionBundle(itemPrice);
           const statusColor = isAffordable ? colors.success : colors.error;
 
           return (
             <View style={styles.itemCard}>
-              {/* Card Top: Item Info */}
               <View style={styles.itemMainRow}>
                 <View style={styles.itemIconBox}>
                   <ShoppingBag size={22} color={colors.white} />
@@ -368,7 +332,6 @@ const ComparisonTab = () => {
                 </View>
               </View>
 
-              {/* Card Bottom: The Trade-off */}
               {isAffordable && transactions.length > 0 && (
                 <View style={styles.tradeOffContainer}>
                   <View style={styles.tradeOffHeader}>
@@ -393,7 +356,6 @@ const ComparisonTab = () => {
                          </View>
                     ))}
                     
-                    {/* Show Total Saved only if multiple transactions were combined */}
                     {transactions.length > 1 && (
                         <View style={{ borderTopWidth: 1, borderColor: colors.border, marginTop: 4, paddingTop: 4, flexDirection:'row', justifyContent:'flex-end' }}>
                             <Text style={{ fontSize: 12, color: colors.textSecondary, marginRight: 5 }}>Total:</Text>
