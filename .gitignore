@@ -37,6 +37,11 @@ local.properties
 
 .env
 
+android/app/release/
+android/signing/
+file.txt
+ios/xcuserdata/
+
 # node.js
 #
 node_modules/

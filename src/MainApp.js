@@ -78,35 +78,33 @@ const MainApp = () => {
     }
   };
 
-  useEffect(() => {
-    let unsubscribeForeground = null;
+useEffect(() => {
+  let unsubscribeForeground = null;
 
-    (async () => {
-      const granted = await requestPermissions();
-      if (!granted) return;
+  const initNotifications = async () => {
+    const granted = await requestPermissions();
+    if (!granted) return;
 
-      const token = await getFCMToken();
-      dispatch(setFcmToken(token));
+    // Hamesha fresh token lene ki koshish karein
+    const token = await getFCMToken();
+    dispatch(setFcmToken(token));
 
-      unsubscribeForeground = onForegroundMessage(msg => {
-        handleNewNotification(msg);
-      });
+    unsubscribeForeground = onForegroundMessage(msg => {
+      handleNewNotification(msg);
+    });
 
-      onBackgroundMessage(msg => {
-        handleNewNotification(msg);
-      });
+    // background aur opened handlers ko cleanup ke saath rakhein
+    onNotificationOpened(msg => {
+      handleNewNotification(msg);
+    });
+  };
 
-      onNotificationOpened(msg => {
-        handleNewNotification(msg);
-      });
-    })();
+  initNotifications();
 
-    return () => {
-      if (unsubscribeForeground) {
-        unsubscribeForeground();
-      }
-    };
-  }, []);
+  return () => {
+    if (unsubscribeForeground) unsubscribeForeground();
+  };
+}, [LoginData?.user?.id]); // 💡 User change hote hi ye refresh hoga
 
   return (
     <PaperProvider>

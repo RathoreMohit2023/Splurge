@@ -1,6 +1,6 @@
-  export const BASE_URL = 'https://stage.techsimba.in/splurge/public/api/';
+export const BASE_URL = 'https://splurge.techsimba.in/splurge/public/api/';
 
-export const Img_url = 'https://stage.techsimba.in/splurge/public/uploads/users/';
+export const Img_url = 'https://splurge.techsimba.in/splurge/public/uploads/users/';
 
 export const Login_Url = 'login';
 export const Google_Url = 'google-login';
@@ -48,3 +48,4 @@ export const GetInterest_Url = 'get-interest';
 export const GetCategories_Url = 'get-categories';
 export const GetMonthlyBudget_Url = 'get-monthly-budget/';
 export const DeleteAccount_Url = 'delete-account'
+export const changePassowrd_url = "reset-password"

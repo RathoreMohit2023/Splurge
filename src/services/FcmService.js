@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import messaging from "@react-native-firebase/messaging";
-import { Platform, PermissionsAndroid } from "react-native";
+import { Platform, PermissionsAndroid, Alert } from "react-native";
 
 // Ask Android 13+ Notification Permission
 export const requestAndroidNotificationPermission = async () => {
@@ -60,7 +60,16 @@ export const getFCMToken = async () => {
 
 export const onForegroundMessage = (callback) => {
   return messaging().onMessage(async remoteMessage => {
-    console.log("📩 Foreground:", remoteMessage);
+    console.log("📩 Foreground Message:", remoteMessage);
+    
+    // iOS par banner dikhane ke liye manually Alert dikhana padta hai
+    if (Platform.OS === 'ios') {
+       Alert.alert(
+         remoteMessage.notification.title,
+         remoteMessage.notification.body
+       );
+    }
+    
     callback && callback(remoteMessage);
   });
 };

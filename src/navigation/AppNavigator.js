@@ -24,6 +24,7 @@ import GroupExpense from "../screens/MainScreen/GroupExpense";
 import WeeklyAvg from "../screens/MainScreen/WeeklyAvg";
 import DailyAvg from "../screens/MainScreen/DailyAvg";
 import TabNavigator from "../navigation/tabNavigator"; // Assuming TabNavigator is in the same directory
+import ChangePassword from "../screens/MainScreen/ChangePassword";
 
 const Stack = createStackNavigator();
 
@@ -53,6 +54,8 @@ const AppNavigator = () => {
             <Stack.Screen name="PDFViewer" component={PDFViewer} options={{ title: "Document Viewer" }} />
             <Stack.Screen name="weeklyAvg" component={WeeklyAvg} />
             <Stack.Screen name="DailyAvg" component={DailyAvg} />
+             <Stack.Screen name="changePassword" component={ChangePassword} />
+
         </Stack.Navigator>
     );
 };

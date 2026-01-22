@@ -101,7 +101,6 @@ const PDFViewer = ({ route, navigation }) => {
       {/* ----------- HEADER BAR ----------- */}
       <View
         style={{
-          height: 80,
           backgroundColor: colors.card,
           flexDirection: "row",
           alignItems: "center",
@@ -112,6 +111,8 @@ const PDFViewer = ({ route, navigation }) => {
           shadowRadius: 4,
           shadowOffset: { width: 0, height: 2 },
           zIndex: 1000,
+          marginTop : 40,
+          padding : 10
         }}
       >
         <TouchableOpacity

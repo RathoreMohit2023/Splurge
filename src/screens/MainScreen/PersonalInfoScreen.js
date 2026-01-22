@@ -8,8 +8,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   Image,
-  StyleSheet,
-  PermissionsAndroid,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -31,7 +29,7 @@ import { GetInterestApi } from '../../Redux/Api/GetInterestApi';
 import { GetUserDetailsApi } from '../../Redux/Api/GetUserDetailsApi';
 import { Img_url } from '../../Redux/NWConfig';
 import getPersonalInfoStyle from '../../styles/MainScreen/PersonalInfoStyle';
-import {requestCamera, requestGallery } from '../../services/Permission';
+import {requestCamera } from '../../services/Permission';
 
 const PersonalInfoScreen = ({ navigation }) => {
   const { colors, themeType } = useContext(ThemeContext);
@@ -152,8 +150,6 @@ const PersonalInfoScreen = ({ navigation }) => {
   };
 
   const openGallery = async () => {
-    const galleryGranted = await requestGallery();
-    if (!galleryGranted) return;
     launchImageLibrary(
       { mediaType: 'photo', quality: 0.8 },
       handleImageResponse,

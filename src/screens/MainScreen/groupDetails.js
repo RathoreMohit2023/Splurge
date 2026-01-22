@@ -68,7 +68,12 @@ const GroupDetails = ({ navigation }) => {
   const { AddGroupExpenseLoading } = useSelector(
     state => state.AddGroupExpense || {},
   );
-
+  console.log(GetGroupMembersData, 'GetGroupMembersData');
+  console.log(isStillMember, 'isStillMember');
+  console.log(GetGroupMembersLoading, 'GetGroupMembersLoading');
+  
+  
+  
   const loading =
     GetGroupExpenseLoading || AddGroupExpenseLoading || GetGroupMembersLoading;
 
@@ -87,7 +92,6 @@ const GroupDetails = ({ navigation }) => {
     message: '',
     btnText: '',
   });
-  console.log(groupMembers, 'groupMembers');
 
   const fetchGroupData = () => {
     if (LoginData?.token && group?.id) {
@@ -101,34 +105,28 @@ const GroupDetails = ({ navigation }) => {
     fetchGroupData();
   }, [group]);
 
-  // --- 2. Process Group Members ---
-  // --- 2. Process Group Members ---
-  useEffect(() => {
-    // Check if the data is loaded and is an array
-    if (GetGroupMembersData?.members && Array.isArray(GetGroupMembersData.members) && group?.id) {
-      const filteredMembers = GetGroupMembersData.members.filter(
-        member => String(member.group_id) === String(group.id),
-      );
-      setGroupMembers(filteredMembers);
-  
-      // *** ADD THIS LOGIC ***
-      // After updating members, verify if the current user is still in the list.
-      const currentUserIsMember = filteredMembers.some(
-        member => member.user_id === LoginData?.user?.id
-      );
-      
-      // Only update the status if the API call is not loading to avoid incorrect states
-      if (!GetGroupMembersLoading) {
-          setIsStillMember(currentUserIsMember);
-      }
-      // *** END OF ADDED LOGIC ***
-  
-    } else if (!GetGroupMembersLoading) {
-      // If members data is null or not an array after loading, user is not a member.
-      setGroupMembers([]);
-      setIsStillMember(false);
+ useEffect(() => {
+  if (GetGroupMembersData?.members && Array.isArray(GetGroupMembersData.members) && group?.id) {
+    const filteredMembers = GetGroupMembersData.members.filter(
+      member => String(member.group_id) === String(group.id),
+    );
+    setGroupMembers(filteredMembers);
+
+    // सुधार: String() का उपयोग करें ताकि ID टाइप (String/Number) मैच हो सके
+    const currentUserIsMember = filteredMembers.some(
+      member => String(member.user_id) === String(LoginData?.user?.id)
+    );
+    
+    if (!GetGroupMembersLoading) {
+        setIsStillMember(currentUserIsMember);
     }
-  }, [GetGroupMembersData, group, LoginData?.user?.id, GetGroupMembersLoading]); // Add dependencies
+
+  } else if (!GetGroupMembersLoading && GetGroupMembersData) { 
+    // सिर्फ तभी false करें जब डेटा आ चुका हो और खाली हो
+    setGroupMembers([]);
+    setIsStillMember(false);
+  }
+}, [GetGroupMembersData, group?.id, LoginData?.user?.id, GetGroupMembersLoading]);
 
   // --- 3. Process Expenses ---
   useEffect(() => {
@@ -145,9 +143,9 @@ const GroupDetails = ({ navigation }) => {
   }, [GetFriendsData]);
 
   // --- 5. Determine Current User Role ---
-  const currentUserMemberObj = useMemo(() => {
-    return groupMembers.find(m => m.user_id === LoginData?.user?.id);
-  }, [groupMembers, LoginData]);
+const currentUserMemberObj = useMemo(() => {
+  return groupMembers.find(m => String(m.user_id) === String(LoginData?.user?.id));
+}, [groupMembers, LoginData]);
 
   const isCurrentUserAdmin =
     currentUserMemberObj?.role === 'admin' ||
@@ -193,12 +191,12 @@ const GroupDetails = ({ navigation }) => {
       let debtors = [];
       let creditors = [];
 
-      Object.keys(balances).forEach(userId => {
+     Object.keys(balances).forEach(userId => {
         const val = balances[userId];
         if (val < -0.01)
-          debtors.push({ userId: parseInt(userId), amount: val });
+          debtors.push({ userId: userId, amount: val }); // <-- FIX: Removed parseInt
         if (val > 0.01)
-          creditors.push({ userId: parseInt(userId), amount: val });
+          creditors.push({ userId: userId, amount: val }); // <-- FIX: Removed parseInt
       });
 
       debtors.sort((a, b) => a.amount - b.amount);
@@ -237,6 +235,9 @@ const GroupDetails = ({ navigation }) => {
         settlements: plan,
       };
     }, [groupExpenses, groupMembers, group]);
+
+    console.log(settlements, 'settlementssettlements');
+    
 
   // --- Handlers ---
 

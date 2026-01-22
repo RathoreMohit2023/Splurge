@@ -204,7 +204,8 @@ const GroupSettle = ({ navigation }) => {
     }
   }, [GetGroupsData]);
 
-  useEffect(() => {
+ // FIX: Using parseInt to ensure group IDs are numbers
+useEffect(() => {
     if (GetGroupMembersData?.members) {
       const membersList = GetGroupMembersData.members;
 
@@ -212,7 +213,8 @@ const GroupSettle = ({ navigation }) => {
       const foundMyGroupIds = [];
 
       membersList.forEach(member => {
-        const gId = member.group_id;
+        // Ensure the group ID is treated as a number
+        const gId = parseInt(member.group_id, 10); 
 
         if (newCounts[gId]) {
           newCounts[gId] += 1;
@@ -221,7 +223,8 @@ const GroupSettle = ({ navigation }) => {
         }
 
         if (String(member.user_id) === String(userId)) {
-          if (!foundMyGroupIds.includes(gId)) {
+          // Now we're comparing a number with an array of numbers, which will work
+          if (!foundMyGroupIds.includes(gId)) { 
             foundMyGroupIds.push(gId);
           }
         }
@@ -230,7 +233,7 @@ const GroupSettle = ({ navigation }) => {
       setGroupMemberCounts(newCounts);
       setMyGroupIds(foundMyGroupIds);
     }
-  }, [GetGroupMembersData, userId]);
+}, [GetGroupMembersData, userId]);
 
   useEffect(() => {
     if (groups.length > 0 && LoginData?.token) {

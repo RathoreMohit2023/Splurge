@@ -13,10 +13,10 @@ import {
 } from './src/services/RequestPermissions';
 import { requestPermissions } from './src/services/FcmService';
 const App = () => {
-  useEffect(() => {
+useEffect(() => {
     GoogleSignin.configure({
-      webClientId:
-        '841623319340-hjts0mrogfelo99t6km4un0bd83bj77e.apps.googleusercontent.com',
+      webClientId: '841623319340-hjts0mrogfelo99t6km4un0bd83bj77e.apps.googleusercontent.com', 
+      iosClientId: '841623319340-dbbejcg06vntcqfg0h5ujm1b02a4r1q6.apps.googleusercontent.com',
       offlineAccess: true,
     });
   }, []);
@@ -31,15 +31,6 @@ const App = () => {
       const cameraGranted = await requestCameraPermission();
       if (!cameraGranted) {
         console.log('❌ Camera permission denied');
-      }
-
-      const galleryGranted = await requestGalleryPermission();
-      if (!galleryGranted) {
-        console.log('❌ Gallery permission denied');
-      }
-
-      if (granted && cameraGranted && galleryGranted) {
-        console.log('✅ All permissions granted');
       }
     };
 

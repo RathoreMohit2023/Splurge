@@ -210,6 +210,12 @@ const getProfileStyle = (colors) => StyleSheet.create({
         fontWeight: '600',
         fontFamily: 'serif',
     },
+    closeModalBtn : {
+        marginLeft : 10,
+        position : 'absolute',
+        zIndex : 1000,
+        right : '20'
+    }
 });
 
 export default getProfileStyle;

@@ -10,7 +10,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableWithoutFeedback,
-  Keyboard
+  Keyboard,
+  Alert
 } from "react-native";
 import { appleLogo, darkLogo, googleLogo, MainLogo } from "../../Assets/Images";
 import CustomInput from "../../components/CustomInput"; 
@@ -23,7 +24,9 @@ import DashedLoader from "../../components/DashedLoader";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CheckBox from "@react-native-community/checkbox";
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import appleAuth from '@invertase/react-native-apple-authentication';
+import { appleAuth } from '@invertase/react-native-apple-authentication'
+import auth from '@react-native-firebase/auth';
+import { crypto } from 'react-native-quick-crypto';
 
 // // IMPORTS: Add Vector Icons
 // import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -150,6 +153,7 @@ const SignInScreen = ({ navigation }) => {
       const formData = new FormData();
       formData.append('email', user?.email);
       formData.append('fullname', user?.givenName + ' ' + user?.familyName);
+      formData.append('google_id', user?.id)
 
       
       try {
@@ -190,58 +194,81 @@ const SignInScreen = ({ navigation }) => {
     }
   };
 
-  const handleAppleSignUIn = async() => {
-    try{
-      const appleAuthResponse = await appleAuth.performRequest({
-        requestedOperation: appleAuth.Operation.LOGIN,
-        requestedScopes: [
-          appleAuth.Scope.EMAIL,
-          appleAuth.Scope.FULL_NAME,
-        ],
-      });
+const handleAppleSignUIn = async () => {
+  try {
+    const appleAuthRequestResponse = await appleAuth.performRequest({
+      requestedOperation: appleAuth.Operation.LOGIN,
+      requestedScopes: [appleAuth.Scope.EMAIL, appleAuth.Scope.FULL_NAME],
+    });
 
-      const { identifyToken, fullName, email, user} = appleAuthResponse;
+    const {
+      identityToken,
+      fullName,
+      email,
+      user: appleUserId,
+    } = appleAuthRequestResponse;
 
-      if(!identifyToken){
-        setToastMsg("Apple Sign In failed");
-        setShowToast(true)
-        return;
+    if (!identityToken) {
+      Alert.alert("Error", "Apple Identity Token missing!");
+      return;
+    }
+
+    const formData = new FormData();
+    
+    // 1. Apple User ID हमेशा भेजें क्योंकि यह पहचान के लिए ज़रूरी है
+    formData.append('google_id', appleUserId); 
+
+    // 2. ईमेल तभी भेजें जब वह मौजूद हो (Apple केवल पहली बार ईमेल देता है)
+    if (email) {
+      formData.append('email', email);
+    }
+
+    // 3. नाम तभी भेजें जब वह मौजूद हो
+    const firstName = fullName?.givenName || "";
+    const lastName = fullName?.familyName || "";
+    const finalDisplayName = `${firstName} ${lastName}`.trim();
+
+    if (finalDisplayName) {
+      formData.append('fullname', finalDisplayName);
+    }
+
+    // DEBUG: चेक करने के लिए कि FormData में क्या जा रहा है
+    console.log("FormData Fields Prepared");
+
+    // 4. API Call
+    const result = await dispatch(GoogleLoginApi(formData));
+    const response = result?.payload;
+
+    if (
+      response?.token ||
+      response?.status === 200 ||
+      response?.message?.toLowerCase().includes('success')
+    ) {
+      setToastMsg(response?.message || 'Login Successful');
+      setShowToast(true);
+
+      if (rememberMe && email) {
+        await AsyncStorage.setItem("savedEmail", email);
       }
 
-      const formData = new FormData();
-      formData.append('apple_id', user);
-      formData.append('email', email || '');
-      formData.append(
-        'fullname',
-        `${fullName?.givenName || ''} ${fullName?.familyName || ''}`
-      );
-      formData.append('token', identifyToken);
-
-      const result = await dispatch(GoogleLoginApi(formData));
-
-      const  respond = result?.payload;
-
-      if(
-        respond?.token || 
-        respond?.status === 200 ||
-        respond?.message?.toLowerCase().includes('Success')
-      ){
-        setToastMsg(respond?.message || 'Login Successful');
-        setShowToast(true);
-
-        setTimeout(() => {
-          navigation.replace('MainScreen');
-        }, 1000);
-      } else {
-        setToastMsg(respond?.message || 'Apple login failed');
-        setShowToast(true)
-      }
+      setTimeout(() => {
+        navigation.replace('MainScreen');
+      }, 1500);
+    } else {
+      setToastMsg(response?.message || 'Invalid credentials');
+      setShowToast(true);
     }
-    catch(error){
-      setToastMsg("Apple login error")
-      setShowToast(true)
+
+  } catch (error) {
+    console.log("Apple Login Error:", error);
+    if (error.code === appleAuth.Error.CANCELED) {
+      Alert.alert("Cancelled", "User cancelled the login process.");
+    } else {
+      Alert.alert("Error", "Something went wrong during Apple Sign-In");
     }
-  }  
+  }
+};
+
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -328,23 +355,7 @@ const SignInScreen = ({ navigation }) => {
                   </View>
                 </TouchableOpacity>
 
-                {/* <TouchableOpacity
-                    style={styles.appleBtn}
-                    onPress={handleAppleSignUIn}
-                    activeOpacity={0.8}
-                  >
-                    <View style={styles.appleIconWrapper}>
-                      <Image 
-                        source={appleLogo}
-                        style={styles.appleIcon}
-                      />
-                      <Text style={styles.appleBtnText}>
-                        Continue with Apple
-                      </Text>
-                    </View>
-                  </TouchableOpacity> */}
-
-                {Platform.OS === 'iOS' && (
+                {Platform.OS === 'ios' && (
                   <TouchableOpacity
                     style={styles.appleBtn}
                     onPress={handleAppleSignUIn}

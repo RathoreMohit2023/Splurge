@@ -291,7 +291,7 @@ const GroupExpense = ({ navigation }) => {
         barStyle={
           colors.background === '#080808' ? 'light-content' : 'dark-content'
         }
-        backgroundColor={colors.surface}
+        backgroundColor={colors.background}
       />
 
       {/* Header */}

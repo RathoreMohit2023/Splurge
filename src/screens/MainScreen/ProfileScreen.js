@@ -22,9 +22,10 @@ import {
   Phone,
   X,
   Trash2,
+  Lock,
 } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import ImageViewer from '@react-native-ohos/react-native-image-zoom-viewer';
+import ImageViewer from 'react-native-image-zoom-viewer';
 
 import getProfileStyle from '../../styles/MainScreen/ProfileStyle';
 import { ThemeContext } from '../../components/ThemeContext';
@@ -35,6 +36,8 @@ import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { logout } from '../../Redux/Slice/LoginSlice';
 import { DeleteAccountApi } from '../../Redux/Api/GetDeleteAccountApi';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { clearFcmToken } from '../../Redux/Slice/FcmSlice';
+import messaging from '@react-native-firebase/messaging';
 
 const ProfileScreen = ({ navigation }) => {
   const { colors, themeType } = useContext(ThemeContext);
@@ -73,7 +76,12 @@ const ProfileScreen = ({ navigation }) => {
           label: 'Notifications',
           onPress: () => navigation.navigate('notificationScreen'),
         },
-        {
+         {
+          icon: Lock,
+          label: 'Change Password',
+          onPress: () => navigation.navigate('changePassword'),
+        },
+         {
           icon: Trash2,
           label: 'Delete Account',
           onPress: () => setDeleteAlertVisible(true),
@@ -145,16 +153,32 @@ const ProfileScreen = ({ navigation }) => {
   }, [GetUserDetailsData]);
 
   const handleLogout = () => setLogoutAlertVisible(true);
+const confirmLogout = async () => {
+  setLogoutAlertVisible(false);
+  try {
+    // 1. Firebase messaging token delete karein (Server side cleanup)
+    // Isse server ko pata chal jayega ki ye device ab is user ke liye active nahi hai
+    await messaging().deleteToken();
 
-  const confirmLogout = async () => {
-    setLogoutAlertVisible(false);
-    try {
-      await GoogleSignin.signOut();
-      dispatch(logout());
-    } catch (error) {
-      console.error('Failed to sign out: ', error);
-    }
-  };
+    // 2. Google Sign-Out
+    await GoogleSignin.signOut();
+
+    // 3. Local Storage se token hatayein
+    await AsyncStorage.removeItem('fcm_token');
+
+    // 4. Redux state se FCM token clear karein
+    dispatch(clearFcmToken());
+
+    // 5. User logout action dispatch karein
+    dispatch(logout());
+
+    console.log('Logged out and FCM token cleared successfully');
+  } catch (error) {
+    console.error('Failed to sign out: ', error);
+    // Fallback: Agar token delete fail bhi ho jaye, tab bhi user ko logout kar dein
+    dispatch(logout());
+  }
+};
 
   const confirmDeleteAccount = async () => {
     setDeleteAlertVisible(false);
@@ -345,21 +369,13 @@ const ProfileScreen = ({ navigation }) => {
         transparent
         onRequestClose={() => setImageModalVisible(false)}
       >
-        <ImageViewer
+       <ImageViewer
           imageUrls={profileImages}
           enableSwipeDown
           onSwipeDown={() => setImageModalVisible(false)}
           renderHeader={() => (
             <TouchableOpacity
-              style={{
-                position: 'absolute',
-                top: insets.top + 20,
-                right: 20,
-                zIndex: 999,
-                padding: 10,
-                backgroundColor: 'rgba(0,0,0,0.5)',
-                borderRadius: 20,
-              }}
+              style={[styles.closeModalBtn, { top: insets.top + 10 }]}
               onPress={() => setImageModalVisible(false)}
             >
               <X size={24} color="white" />

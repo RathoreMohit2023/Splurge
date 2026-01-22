@@ -11,8 +11,11 @@ const fcmSlice = createSlice({
     setFcmToken: (state, action) => {
       state.fcmToken = action.payload;
     },
+    clearFcmToken: (state) => { // 💡 Add this
+      state.fcmToken = null;
+    },
   },
 });
 
-export const { setFcmToken } = fcmSlice.actions;
+export const { setFcmToken, clearFcmToken} = fcmSlice.actions;
 export default fcmSlice.reducer;

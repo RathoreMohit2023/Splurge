@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>841623319340-87i1svk6cr0afj744ip4f370ca3sk5j4.apps.googleusercontent.com</string>
+	<string>841623319340-dbbejcg06vntcqfg0h5ujm1b02a4r1q6.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.841623319340-87i1svk6cr0afj744ip4f370ca3sk5j4</string>
+	<string>com.googleusercontent.apps.841623319340-dbbejcg06vntcqfg0h5ujm1b02a4r1q6</string>
 	<key>ANDROID_CLIENT_ID</key>
 	<string>841623319340-29c81u13ptgp89c1v05ipm3bvdp393ub.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
@@ -15,7 +15,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.splurgeapp</string>
+	<string>com.techsimba.splurge</string>
 	<key>PROJECT_ID</key>
 	<string>sms1-5df87</string>
 	<key>STORAGE_BUCKET</key>
@@ -31,6 +31,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:841623319340:ios:fc0982f0783d1d299ff289</string>
+	<string>1:841623319340:ios:504d104436cae3fd9ff289</string>
 </dict>
 </plist>

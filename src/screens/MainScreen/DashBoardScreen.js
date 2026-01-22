@@ -65,6 +65,7 @@ import { GetGroupsApi } from '../../Redux/Api/GetGroupsAPi';
 import { Img_url } from '../../Redux/NWConfig';
 import { DeviceTokenApi } from '../../Redux/Api/DeviceTokenApi';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getFCMToken } from '../../services/FcmService';
 
 const categoryIcons = {
   'Food & Groceries': Utensils,
@@ -128,17 +129,40 @@ const DashBoardScreen = ({ navigation }) => {
   const isLoading =
     GetTransactionLoading || GetWishlistLoading || GetMonthlyBudgetloading;
     
+const fetchApi = async () => {
+  if (LoginData?.token && LoginData?.user?.id) {
+    const token = LoginData.token;
+    const userId = LoginData.user.id;
 
-  const fetchApi = async () => {
-    if (LoginData?.token && LoginData?.user?.id) {
-      const fcmLocalToken = await AsyncStorage.getItem('fcm_token');
-      const token = LoginData.token;
-      const userId = LoginData.user.id;
-      const DeviceToken = fcmToken ? fcmToken : fcmLocalToken;
+    // 1. Sabse pehle token nikalte hain
+    let DeviceToken = fcmToken; // Redux se
+    if (!DeviceToken) {
+      DeviceToken = await AsyncStorage.getItem('fcm_token'); // Storage se
+    }
+    if (!DeviceToken) {
+      DeviceToken = await getFCMToken(); // Fresh generate karein
+    }
+
+    // ✅ Debugging: Alert sirf testing ke liye (Baad mein comment kar dena)
+    if (DeviceToken) {
+       // Alert.alert("FCM Token", DeviceToken); 
+       console.log("🚀 Final Token for API:", DeviceToken);
+    } else {
+       console.log("❌ Token Error: FCM Token nahi mil paya.");
+       // Alert.alert("Error", "FCM Token missing!");
+    }
+
+    // 2. Agar token mil gaya hai, toh API calls karein
+    if (DeviceToken) {
       const postData = {
         user_id: userId,
         device_token: DeviceToken,
       };
+
+      // ✅ Ek hi baar call karein DeviceTokenApi
+      dispatch(DeviceTokenApi({ postData, token }));
+
+      // ✅ Baaki saari details fetch karein
       dispatch(GetUserDetailsApi(token));
       dispatch(GetCategoriesApi(token));
       dispatch(GetWishlistApi({ token, id: userId }));
@@ -148,9 +172,9 @@ const DashBoardScreen = ({ navigation }) => {
       dispatch(GetGroupsApi(token));
       dispatch(GetvideoApi(token));
       dispatch(GetFounderApi(token));
-      dispatch(DeviceTokenApi({ postData, token }));
     }
-  };
+  }
+};
 
   useEffect(() => {
     fetchApi();
@@ -358,7 +382,7 @@ const DashBoardScreen = ({ navigation }) => {
 
       <View style={styles.header}>
         <View>
-          <Text style={styles.greetingText}>Good Morning,</Text>
+          <Text style={styles.greetingText}>Good Morning</Text>
           <Text style={styles.userName}>
             {userData?.fullname || 'User'}
           </Text>

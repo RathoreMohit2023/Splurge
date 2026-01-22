@@ -58,36 +58,3 @@ export const requestCamera = async () => {
     return false;
   }
 };
-
-export const requestGallery = async () => {
-  if (Platform.OS === 'ios') {
-    return await checkAndRequest(PERMISSIONS.IOS.PHOTO_LIBRARY, 'Gallery');
-  }
-
-  // Android के लिए
-  try {
-    let permission = Platform.Version >= 33 
-      ? PERMISSIONS.ANDROID.READ_MEDIA_IMAGES 
-      : PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE;
-
-    const result = await check(permission);
-
-    if (result === 'denied') {
-        Alert.alert(
-          'Permission Blocked',
-          'Gallery access is blocked. Please enable it in the App Settings to upload photos.',
-            [{ text: 'Cancel' }, { text: 'Settings', onPress: () => openSettings() }]
-        );
-        return false;
-    }
-
-    const granted = await PermissionsAndroid.request(
-        Platform.Version >= 33 
-        ? PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES 
-        : PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE
-    );
-    return granted === PermissionsAndroid.RESULTS.GRANTED;
-  } catch (e) {
-    return false;
-  }
-};

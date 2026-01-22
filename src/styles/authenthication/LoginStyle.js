@@ -105,7 +105,7 @@ const getLoginStyle = colors =>
       flexDirection: 'row', // Aligns Icon and Text horizontally
       justifyContent: 'center',
       alignItems: 'center',
-      marginBottom: 30,
+      marginBottom: 10,
       borderWidth: 1,
       borderColor: colors.border,
       // Add Shadow/Elevation for better UI
@@ -192,8 +192,8 @@ const getLoginStyle = colors =>
     },
     
     appleIcon: {
-      width: 24,
-      height: 24,
+      width: 20,
+      height: 20,
       marginRight: 12,
     },
     appleIconWrapper: {
